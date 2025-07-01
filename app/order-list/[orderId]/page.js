@@ -1,32 +1,37 @@
-"use client";
-import Sidebar from '../../components/SideBar';
-import Topbar from '../../components/TopBar';
-import { useState, useEffect } from 'react';
-import { FaEllipsisV, FaCalendarAlt, FaUser, FaDownload, FaCreditCard, FaTruck, FaSave, FaPrint } from 'react-icons/fa';
+'use client';
 
-export default function OrderDetails({ params }) {
-  const [categories, setCategories] = useState([]);
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Topbar from '../../components/TopBar';
+import { FaCalendarAlt, FaPrint, FaSave, FaUser, FaTruck, FaDownload, FaCreditCard, FaEllipsisV } from 'react-icons/fa';
+
+export default function OrderDetails() {
+  const params = useParams();
   const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!params?.orderId) return;
+
+    setLoading(true);
     fetch('/data.json')
       .then(res => res.json())
       .then(data => {
-        setCategories(data.categories || []);
-        if (data.orderDetails && data.orderDetails[`#${params.orderId}`]) {
-          setOrder(data.orderDetails[`#${params.orderId}`]);
-        }
+        const orderData = data.orderDetails?.[`#${params.orderId}`] || null;
+        setOrder(orderData);
+        setLoading(false);
       });
-  }, [params.orderId]);
+  }, [params?.orderId]);
 
-  if (!order) return <div className="p-8">Loading...</div>;
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (!order) return <div className="p-8 text-red-600">Order not found.</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar with categories */}
       <aside className="w-64 bg-white shadow-md p-6 hidden md:block">
         <h1 className="text-2xl font-bold text-blue-800 mb-10 flex items-center gap-2">
-          <img src="/next.svg" alt="Logo" className="w-8 h-8" /> Arik
+          <img src="/logo.svg" alt="Logo" className="w-8 h-8" /> Arik
         </h1>
         <nav>
           <ul className="space-y-2 mb-8">
@@ -40,21 +45,7 @@ export default function OrderDetails({ params }) {
               <a href="/order-list" className="block rounded px-3 py-2 transition-colors bg-blue-100 text-blue-800 font-medium">Order List</a>
             </li>
           </ul>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Categories</h2>
-            <ul className="space-y-1">
-              {categories.map((cat, idx) => (
-                <li key={idx}>
-                  <button
-                    className={`flex items-center justify-between w-full px-2 py-1 rounded transition-colors text-gray-800 hover:bg-gray-100`}
-                  >
-                    <span>{cat.name}</span>
-                    <span className={`ml-2 px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-700`}>{cat.count?.toString().padStart(2, '0')}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          
         </nav>
       </aside>
       {/* Main content */}
@@ -62,14 +53,14 @@ export default function OrderDetails({ params }) {
         <Topbar />
         <main className="flex-1 p-8 bg-gray-50">
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">Orders Details</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">Order Details</h2>
             <div className="text-sm text-gray-500 mt-1">Home &gt; Order List &gt; Order Details</div>
           </div>
           {/* Order Info Card */}
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
-                <span className="font-semibold text-lg text-gray-900">Orders ID: {order.id}</span>
+                <span className="font-semibold text-lg text-gray-900">Order ID: {order.id}</span>
                 <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-xs font-bold">{order.status}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -83,36 +74,36 @@ export default function OrderDetails({ params }) {
                   <option>Delivered</option>
                   <option>Canceled</option>
                 </select>
-                <button className="bg-gray-200 p-2 rounded"><FaPrint /></button>
-                <button className="bg-gray-200 p-2 rounded"><FaSave /></button>
+                <button className="bg-gray-200 p-2 rounded" aria-label="Print order"><FaPrint /></button>
+                <button className="bg-gray-200 p-2 rounded" aria-label="Save order"><FaSave /></button>
               </div>
             </div>
             {/* Info Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaUser className="text-gray-500" /><span className="font-semibold">Customer</span></div>
-                <div className="text-sm text-gray-900 font-bold">Full Name: {order.customer.name}</div>
-                <div className="text-xs text-gray-700">Email: {order.customer.email}</div>
-                <div className="text-xs text-gray-700 mb-2">Phone: {order.customer.phone}</div>
+                <div className="text-sm text-gray-900 font-bold">Full Name: {order.customer?.name ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Email: {order.customer?.email ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700 mb-2">Phone: {order.customer?.phone ?? 'N/A'}</div>
                 <button className="bg-blue-900 text-white px-4 py-1 rounded text-xs font-semibold">View profile</button>
               </div>
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaTruck className="text-gray-500" /><span className="font-semibold">Order Info</span></div>
-                <div className="text-xs text-gray-700">Shipping: {order.orderInfo.shipping}</div>
-                <div className="text-xs text-gray-700">Payment Method: {order.orderInfo.paymentMethod}</div>
-                <div className="text-xs text-gray-700 mb-2">Status: {order.orderInfo.status}</div>
+                <div className="text-xs text-gray-700">Shipping: {order.orderInfo?.shipping ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Payment Method: {order.orderInfo?.paymentMethod ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700 mb-2">Status: {order.orderInfo?.status ?? 'N/A'}</div>
                 <button className="bg-blue-900 text-white px-4 py-1 rounded text-xs font-semibold flex items-center gap-1"><FaDownload /> Download info</button>
               </div>
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaTruck className="text-gray-500" /><span className="font-semibold">Deliver to</span></div>
-                <div className="text-xs text-gray-700 mb-2">Address: {order.shipping.address}</div>
+                <div className="text-xs text-gray-700 mb-2">Address: {order.shipping?.address ?? 'N/A'}</div>
                 <button className="bg-blue-900 text-white px-4 py-1 rounded text-xs font-semibold">View profile</button>
               </div>
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaCreditCard className="text-gray-500" /><span className="font-semibold">Payment Info</span></div>
-                <div className="text-xs text-gray-700">{order.payment.method}</div>
-                <div className="text-xs text-gray-700">Business name: {order.payment.business}</div>
-                <div className="text-xs text-gray-700">Phone: {order.payment.phone}</div>
+                <div className="text-xs text-gray-700">{order.payment?.method ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Business name: {order.payment?.business ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Phone: {order.payment?.phone ?? 'N/A'}</div>
               </div>
             </div>
             {/* Note */}
@@ -136,21 +127,25 @@ export default function OrderDetails({ params }) {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 text-gray-700">
-                    <th className="px-3 py-2 text-left font-semibold"><input type="checkbox" /></th>
-                    <th className="px-3 py-2 text-left font-semibold">Product Name</th>
-                    <th className="px-3 py-2 text-left font-semibold">Order ID</th>
-                    <th className="px-3 py-2 text-left font-semibold">Quantity</th>
-                    <th className="px-3 py-2 text-left font-semibold">Total</th>
+                    <th scope="col" className="px-3 py-2 text-left font-semibold"><input type="checkbox" aria-label="Select all products" /></th>
+                    <th scope="col" className="px-3 py-2 text-left font-semibold">Product Name</th>
+                    <th scope="col" className="px-3 py-2 text-left font-semibold">Order ID</th>
+                    <th scope="col" className="px-3 py-2 text-left font-semibold">Quantity</th>
+                    <th scope="col" className="px-3 py-2 text-left font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {order.products.map((product, idx) => (
-                    <tr key={idx} className="border-t border-gray-200 hover:bg-gray-50 transition">
-                      <td className="px-3 py-2"><input type="checkbox" /></td>
+                  {order.products?.map((product, idx) => (
+                    <tr
+                      key={product.orderId + idx}
+                      className="border-t border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                      onClick={() => router.push(`/product/${product.orderId}`)}
+                    >
+                      <td className="px-3 py-2"><input type="checkbox" aria-label={`Select ${product.name}`} /></td>
                       <td className="px-3 py-2">{product.name}</td>
                       <td className="px-3 py-2">{product.orderId}</td>
                       <td className="px-3 py-2">{product.quantity}</td>
-                      <td className="px-3 py-2">₹{product.total.toFixed(2)}</td>
+                      <td className="px-3 py-2">₹{product.total?.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -159,18 +154,18 @@ export default function OrderDetails({ params }) {
             {/* Summary */}
             <div className="flex flex-col items-end mt-4">
               <div className="w-full max-w-xs">
-                <div className="flex justify-between py-1 text-gray-700"><span>Subtotal</span><span>₹{order.summary.subtotal}</span></div>
-                <div className="flex justify-between py-1 text-gray-700"><span>Tax (20%)</span><span>₹{order.summary.tax}</span></div>
-                <div className="flex justify-between py-1 text-gray-700"><span>Discount</span><span>₹{order.summary.discount}</span></div>
-                <div className="flex justify-between py-1 text-gray-700"><span>Shipping Rate</span><span>₹{order.summary.shipping}</span></div>
-                <div className="flex justify-between py-2 text-lg font-bold text-gray-900 border-t mt-2"><span>Total</span><span>₹{order.summary.total}</span></div>
+                <div className="flex justify-between py-1 text-gray-700"><span>Subtotal</span><span>₹{order.summary?.subtotal?.toFixed(2) ?? '0.00'}</span></div>
+                <div className="flex justify-between py-1 text-gray-700"><span>Tax (20%)</span><span>₹{order.summary?.tax?.toFixed(2) ?? '0.00'}</span></div>
+                <div className="flex justify-between py-1 text-gray-700"><span>Discount</span><span>₹{order.summary?.discount?.toFixed(2) ?? '0.00'}</span></div>
+                <div className="flex justify-between py-1 text-gray-700"><span>Shipping Rate</span><span>₹{order.summary?.shipping?.toFixed(2) ?? '0.00'}</span></div>
+                <div className="flex justify-between py-2 text-lg font-bold text-gray-900 border-t mt-2"><span>Total</span><span>₹{order.summary?.total?.toFixed(2) ?? '0.00'}</span></div>
               </div>
             </div>
           </div>
         </main>
         {/* Footer */}
         <footer className="p-4 text-xs text-gray-500 flex justify-between bg-white border-t mt-auto">
-          <span>© 2023 - pulstron Dashboard</span>
+          <span>© 2023 - Zareshop admin Dashboard</span>
           <span>
             <a href="#" className="hover:underline mx-2">About</a>
             <a href="#" className="hover:underline mx-2">Careers</a>

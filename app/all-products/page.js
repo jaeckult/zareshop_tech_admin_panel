@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { FaEllipsisV } from 'react-icons/fa'
 
 export default function AllProducts() {
+
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -25,7 +26,7 @@ export default function AllProducts() {
       {/* Sidebar with categories */}
       <aside className="w-64 bg-white shadow-md p-6 hidden md:block">
         <h1 className="text-2xl font-bold text-blue-800 mb-10 flex items-center gap-2">
-          <img src="/next.svg" alt="Logo" className="w-8 h-8" /> Arik
+          Zareshop
         </h1>
         <nav>
           <ul className="space-y-2 mb-8">

@@ -33,7 +33,7 @@ export default function OrderTable() {
               className="border-t border-gray-200 hover:bg-gray-50 transition"
             >
               <td className="py-4 text-gray-800">Lorem Ipsum</td>
-              <td className="py-4 text-gray-600">{order.id}</td>
+              <td className="py-4 text-gray-900">{order.id}</td>
               <td className="py-4 text-gray-600">{order.date}</td>
               <td className="py-4 text-gray-700">{order.customer}</td>
               <td
