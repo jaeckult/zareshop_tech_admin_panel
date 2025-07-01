@@ -6,7 +6,7 @@ import OrderTable from './components/OrderTable'
 export default function Home() {
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
+      <Sidebar showCategories={false} />
       <div className="flex-1">
         <Topbar />
         <main className="p-6">
