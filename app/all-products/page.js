@@ -1,33 +1,24 @@
 "use client";
 import Sidebar from '../components/SideBar'
 import Topbar from '../components/TopBar'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FaEllipsisV } from 'react-icons/fa'
 
-const categories = [
-  { name: 'Lorem Ipsum', count: 21 },
-  { name: 'Lorem Ipsum', count: 32 },
-  { name: 'Lorem Ipsum', count: 13 },
-  { name: 'Lorem Ipsum', count: 14 },
-  { name: 'Lorem Ipsum', count: 6 },
-  { name: 'Lorem Ipsum', count: 11 },
-];
-
-const products = Array.from({ length: 12 }).map((_, i) => ({
-  id: i + 1,
-  title: 'Lorem Ipsum',
-  subtitle: 'Battery',
-  price: '₹110.40',
-  summary: 'Lorem Ipsum is placeholder text commonly used in the graphic.',
-  sales: 1269,
-  remaining: 1269,
-  image: '/next.svg', // Replace with actual product image path
-}));
-
 export default function AllProducts() {
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState(0);
   const [activePage, setActivePage] = useState(1);
+
+  useEffect(() => {
+    fetch('/data.json')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data.categories || []);
+        setProducts(data.products || []);
+      });
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -58,7 +49,7 @@ export default function AllProducts() {
                     onClick={() => setActiveCategory(idx)}
                   >
                     <span>{cat.name}</span>
-                    <span className={`ml-2 px-2 py-0.5 rounded text-xs ${activeCategory === idx ? 'bg-blue-800 text-white' : 'bg-gray-200 text-gray-700'}`}>{cat.count.toString().padStart(2, '0')}</span>
+                    <span className={`ml-2 px-2 py-0.5 rounded text-xs ${activeCategory === idx ? 'bg-blue-800 text-white' : 'bg-gray-200 text-gray-700'}`}>{cat.count?.toString().padStart(2, '0')}</span>
                   </button>
                 </li>
               ))}

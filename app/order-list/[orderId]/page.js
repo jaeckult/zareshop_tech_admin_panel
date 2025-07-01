@@ -1,55 +1,26 @@
 "use client";
 import Sidebar from '../../components/SideBar';
 import Topbar from '../../components/TopBar';
+import { useState, useEffect } from 'react';
 import { FaEllipsisV, FaCalendarAlt, FaUser, FaDownload, FaCreditCard, FaTruck, FaSave, FaPrint } from 'react-icons/fa';
 
-const categories = [
-  { name: 'Lorem Ipsum', count: 21 },
-  { name: 'Lorem Ipsum', count: 32 },
-  { name: 'Lorem Ipsum', count: 13 },
-  { name: 'Lorem Ipsum', count: 14 },
-  { name: 'Lorem Ipsum', count: 6 },
-  { name: 'Lorem Ipsum', count: 11 },
-];
-
-const order = {
-  id: '#6743',
-  status: 'Pending',
-  dateRange: 'Feb 16,2022 - Feb 20,2022',
-  customer: {
-    name: 'Shristi Singh',
-    email: 'shristi@gmail.com',
-    phone: '+91 904 231 1212',
-  },
-  payment: {
-    method: 'Master Card **** **** 6557',
-    business: 'Shristi Singh',
-    phone: '+91 904 231 1212',
-  },
-  shipping: {
-    address: 'Dharam Colony, Palam Vihar, Gurgaon, Haryana',
-  },
-  orderInfo: {
-    shipping: 'Next express',
-    paymentMethod: 'Paypal',
-    status: 'Pending',
-  },
-  products: [
-    { name: 'Lorem Ipsum', orderId: '#25421', quantity: 2, total: 800.40 },
-    { name: 'Lorem Ipsum', orderId: '#25421', quantity: 2, total: 800.40 },
-    { name: 'Lorem Ipsum', orderId: '#25421', quantity: 2, total: 800.40 },
-    { name: 'Lorem Ipsum', orderId: '#25421', quantity: 2, total: 800.40 },
-  ],
-  summary: {
-    subtotal: 3201.6,
-    tax: 640.32,
-    discount: 0,
-    shipping: 0,
-    total: 3841.92,
-  },
-};
-
 export default function OrderDetails({ params }) {
+  const [categories, setCategories] = useState([]);
+  const [order, setOrder] = useState(null);
+
+  useEffect(() => {
+    fetch('/data.json')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data.categories || []);
+        if (data.orderDetails && data.orderDetails[`#${params.orderId}`]) {
+          setOrder(data.orderDetails[`#${params.orderId}`]);
+        }
+      });
+  }, [params.orderId]);
+
+  if (!order) return <div className="p-8">Loading...</div>;
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar with categories */}
@@ -78,7 +49,7 @@ export default function OrderDetails({ params }) {
                     className={`flex items-center justify-between w-full px-2 py-1 rounded transition-colors text-gray-800 hover:bg-gray-100`}
                   >
                     <span>{cat.name}</span>
-                    <span className={`ml-2 px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-700`}>{cat.count.toString().padStart(2, '0')}</span>
+                    <span className={`ml-2 px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-700`}>{cat.count?.toString().padStart(2, '0')}</span>
                   </button>
                 </li>
               ))}

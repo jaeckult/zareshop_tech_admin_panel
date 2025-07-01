@@ -1,0 +1,126 @@
+{
+  "categories": [
+    { "name": "Lorem Ipsum", "count": 21 },
+    { "name": "Lorem Ipsum", "count": 32 },
+    { "name": "Lorem Ipsum", "count": 13 },
+    { "name": "Lorem Ipsum", "count": 14 },
+    { "name": "Lorem Ipsum", "count": 6 },
+    { "name": "Lorem Ipsum", "count": 11 }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "title": "Lorem Ipsum",
+      "subtitle": "Battery",
+      "price": "₹110.40",
+      "summary": "Lorem Ipsum is placeholder text commonly used in the graphic.",
+      "sales": 1269,
+      "remaining": 1269,
+      "image": "/next.svg"
+    }
+  ],
+  "orders": [
+    {
+      "id": "#25426",
+      "date": "Nov 8th,2023",
+      "customer": "Kavin",
+      "status": "Delivered",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25425",
+      "date": "Nov 7th,2023",
+      "customer": "Komael",
+      "status": "Canceled",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25424",
+      "date": "Nov 6th,2023",
+      "customer": "Nikhil",
+      "status": "Delivered",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25423",
+      "date": "Nov 5th,2023",
+      "customer": "Shivam",
+      "status": "Canceled",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25422",
+      "date": "Nov 4th,2023",
+      "customer": "Shadab",
+      "status": "Delivered",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25421",
+      "date": "Nov 2nd,2023",
+      "customer": "Yogesh",
+      "status": "Delivered",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25423",
+      "date": "Nov 1st,2023",
+      "customer": "Sunita",
+      "status": "Canceled",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    },
+    {
+      "id": "#25421",
+      "date": "Nov 1st,2023",
+      "customer": "Priyanka",
+      "status": "Delivered",
+      "amount": "₹200.00",
+      "avatar": "/next.svg"
+    }
+  ],
+  "orderDetails": {
+    "#6743": {
+      "id": "#6743",
+      "status": "Pending",
+      "dateRange": "Feb 16,2022 - Feb 20,2022",
+      "customer": {
+        "name": "Shristi Singh",
+        "email": "shristi@gmail.com",
+        "phone": "+91 904 231 1212"
+      },
+      "payment": {
+        "method": "Master Card **** **** 6557",
+        "business": "Shristi Singh",
+        "phone": "+91 904 231 1212"
+      },
+      "shipping": {
+        "address": "Dharam Colony, Palam Vihar, Gurgaon, Haryana"
+      },
+      "orderInfo": {
+        "shipping": "Next express",
+        "paymentMethod": "Paypal",
+        "status": "Pending"
+      },
+      "products": [
+        { "name": "Lorem Ipsum", "orderId": "#25421", "quantity": 2, "total": 800.40 },
+        { "name": "Lorem Ipsum", "orderId": "#25421", "quantity": 2, "total": 800.40 },
+        { "name": "Lorem Ipsum", "orderId": "#25421", "quantity": 2, "total": 800.40 },
+        { "name": "Lorem Ipsum", "orderId": "#25421", "quantity": 2, "total": 800.40 }
+      ],
+      "summary": {
+        "subtotal": 3201.6,
+        "tax": 640.32,
+        "discount": 0,
+        "shipping": 0,
+        "total": 3841.92
+      }
+    }
+  }
+} 

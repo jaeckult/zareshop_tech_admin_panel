@@ -1,33 +1,24 @@
 "use client";
 import Sidebar from '../components/SideBar';
 import Topbar from '../components/TopBar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaEllipsisV, FaCalendarAlt } from 'react-icons/fa';
 import Link from 'next/link';
 
-const categories = [
-  { name: 'Lorem Ipsum', count: 21 },
-  { name: 'Lorem Ipsum', count: 32 },
-  { name: 'Lorem Ipsum', count: 13 },
-  { name: 'Lorem Ipsum', count: 14 },
-  { name: 'Lorem Ipsum', count: 6 },
-  { name: 'Lorem Ipsum', count: 11 },
-];
-
-const orders = [
-  { id: '#25426', date: 'Nov 8th,2023', customer: 'Kavin', status: 'Delivered', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25425', date: 'Nov 7th,2023', customer: 'Komael', status: 'Canceled', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25424', date: 'Nov 6th,2023', customer: 'Nikhil', status: 'Delivered', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25423', date: 'Nov 5th,2023', customer: 'Shivam', status: 'Canceled', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25422', date: 'Nov 4th,2023', customer: 'Shadab', status: 'Delivered', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25421', date: 'Nov 2nd,2023', customer: 'Yogesh', status: 'Delivered', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25423', date: 'Nov 1st,2023', customer: 'Sunita', status: 'Canceled', amount: '₹200.00', avatar: '/next.svg' },
-  { id: '#25421', date: 'Nov 1st,2023', customer: 'Priyanka', status: 'Delivered', amount: '₹200.00', avatar: '/next.svg' },
-];
-
 export default function OrderList() {
+  const [categories, setCategories] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [activeCategory, setActiveCategory] = useState(0);
   const [activePage, setActivePage] = useState(1);
+
+  useEffect(() => {
+    fetch('/data.json')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data.categories || []);
+        setOrders(data.orders || []);
+      });
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
