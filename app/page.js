@@ -1,30 +1,37 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, loadUserFromStorage } from './redux/slices/authSlice';
 
 export default function LoginPage() {
-  const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
   const router = useRouter();
+  const { isAuthenticated, loading, error } = useSelector(state => state.auth);
 
   useEffect(() => {
-    fetch('/data.json')
-      .then(res => res.json())
-      .then(data => setUsers(data.users || []));
-  }, []);
+    dispatch(loadUserFromStorage());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, loading, router]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-      setError('');
-      router.push('/dashboard');
-    } else {
-      setError('Invalid username or password');
-    }
+    dispatch(login({ username, password }));
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen bg-gray-100">Loading...</div>;
+  }
+  if (isAuthenticated) {
+    return <div className="flex items-center justify-center min-h-screen bg-gray-100">Redirecting...</div>;
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -39,7 +46,9 @@ export default function LoginPage() {
           <label className="block mb-1 font-medium">Password</label>
           <input type="password" className="w-full border rounded px-3 py-2" value={password} onChange={e => setPassword(e.target.value)} required />
         </div>
-        <button type="submit" className="w-full bg-blue-700 text-white py-2 rounded font-semibold hover:bg-blue-800 transition">Login</button>
+        <button type="submit" className="w-full bg-blue-700 text-white py-2 rounded font-semibold hover:bg-blue-800 transition" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
     </div>
   );

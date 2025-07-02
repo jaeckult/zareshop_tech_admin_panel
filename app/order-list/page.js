@@ -1,10 +1,14 @@
 "use client";
 import Sidebar from '../components/SideBar';
-import Topbar from '../components/TopBar';
+import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import { FaEllipsisV, FaCalendarAlt } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+const Topbar = dynamic(() => import('../components/TopBar'), {
+  loading: () => <div className="p-4">Loading top bar...</div>,
+});
 
 export default function OrderList() {
   

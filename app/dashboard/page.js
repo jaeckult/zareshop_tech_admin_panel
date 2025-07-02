@@ -6,16 +6,27 @@ import OrderTable from '../components/OrderTable'
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchDashboardStats } from '../redux/slices/dashboardSlice';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { loadUserFromStorage } from '../redux/slices/authSlice';
 
 export default function Home() {
   const dispatch = useDispatch();
-  const { stats, loading, error } = useSelector((state) => state.dashboard);
+  const router = useRouter();
+  const { stats, loading: statsLoading, error } = useSelector((state) => state.dashboard);
+  const { isAuthenticated, loading: authLoading } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    dispatch(loadUserFromStorage());
     dispatch(fetchDashboardStats());
   }, [dispatch]);
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  if (authLoading || statsLoading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
