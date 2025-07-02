@@ -3,29 +3,20 @@ import Sidebar from '../components/SideBar'
 import Topbar from '../components/TopBar'
 import StatCard from '../components/StatCard'
 import OrderTable from '../components/OrderTable'
-import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchDashboardStats } from '../redux/slices/dashboardSlice';
+import { useEffect } from 'react';
 
 export default function Home() {
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    activeOrders: 0,
-    completedOrders: 0,
-    returnOrders: 0
-  });
+  const dispatch = useDispatch();
+  const { stats, loading, error } = useSelector((state) => state.dashboard);
 
   useEffect(() => {
-    fetch('/data.json')
-      .then(res => res.json())
-      .then(data => {
-        // Calculate stats from data.orders
-        const orders = data.orders || [];
-        const totalOrders = orders.length;
-        const activeOrders = orders.filter(o => o.status === 'Pending').length;
-        const completedOrders = orders.filter(o => o.status === 'Delivered').length;
-        const returnOrders = orders.filter(o => o.status === 'Canceled').length;
-        setStats({ totalOrders, activeOrders, completedOrders, returnOrders });
-      });
-  }, []);
+    dispatch(fetchDashboardStats());
+  }, [dispatch]);
+
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">

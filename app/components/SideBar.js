@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import Categories from './categories';
 
 export default function Sidebar({ showCategories }) {
   const pathname = usePathname();
@@ -21,9 +22,7 @@ export default function Sidebar({ showCategories }) {
         </ul>
         {showCategories && (
           <div className="mt-8">
-            {/* Categories section placeholder */}
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Categories</h2>
-            {/* You can render the Categories component here if needed */}
+            <Categories />
           </div>
         )}
       </nav>

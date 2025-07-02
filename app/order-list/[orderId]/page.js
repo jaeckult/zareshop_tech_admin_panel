@@ -4,26 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Topbar from '../../components/TopBar';
 import { FaCalendarAlt, FaPrint, FaSave, FaUser, FaTruck, FaDownload, FaCreditCard, FaEllipsisV } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchOrderDetails } from '../../redux/slices/orderSlice';
 
 export default function OrderDetails() {
   const params = useParams();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { order, loading, error } = useSelector((state) => state.order);
 
   useEffect(() => {
     if (!params?.orderId) return;
-
-    setLoading(true);
-    fetch('/data.json')
-      .then(res => res.json())
-      .then(data => {
-        const orderData = data.orderDetails?.[`#${params.orderId}`] || null;
-        setOrder(orderData);
-        setLoading(false);
-      });
-  }, [params?.orderId]);
+    dispatch(fetchOrderDetails(params.orderId));
+  }, [params?.orderId, dispatch]);
 
   if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
   if (!order) return <div className="p-8 text-red-600">Order not found.</div>;
 
   return (

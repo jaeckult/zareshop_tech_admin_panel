@@ -1,3 +1,4 @@
+"use client";
 export default function StatCard({ title, value, change }) {
   return (
     <div className="bg-white p-4 rounded shadow text-sm">

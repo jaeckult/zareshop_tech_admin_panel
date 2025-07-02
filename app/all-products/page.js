@@ -3,23 +3,22 @@ import Sidebar from '../components/SideBar'
 import Topbar from '../components/TopBar'
 import { useState, useEffect } from 'react'
 import { FaEllipsisV } from 'react-icons/fa'
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchProductsData } from '../redux/slices/productsSlice';
 
 export default function AllProducts() {
-
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState(0);
   const [activePage, setActivePage] = useState(1);
+  const dispatch = useDispatch();
+  const { categories, products, loading, error } = useSelector((state) => state.products);
 
   useEffect(() => {
-    fetch('/data.json')
-      .then(res => res.json())
-      .then(data => {
-        setCategories(data.categories || []);
-        setProducts(data.products || []);
-      });
-  }, []);
+    dispatch(fetchProductsData());
+  }, [dispatch]);
+
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
