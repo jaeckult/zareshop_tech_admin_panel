@@ -11,11 +11,42 @@ export default function OrderDetails() {
   const params = useParams();
   const dispatch = useDispatch();
   const { order, loading, error } = useSelector((state) => state.order);
+  const [status, setStatus] = useState('');
+  const [statusError, setStatusError] = useState(null);
 
   useEffect(() => {
     if (!params?.orderId) return;
     dispatch(fetchOrderDetails(params.orderId));
   }, [params?.orderId, dispatch]);
+
+  useEffect(() => {
+    if (order && order.status) setStatus(order.status);
+  }, [order]);
+
+  const handleStatusChange = async (e) => {
+    const newStatus = e.target.value;
+    setStatus(newStatus);
+    setStatusError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3000/api/orders/${params.orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setStatusError(err.message || 'Failed to update status');
+        return;
+      }
+      dispatch(fetchOrderDetails(params.orderId));
+    } catch (err) {
+      setStatusError(err.message);
+    }
+  };
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
@@ -55,50 +86,51 @@ export default function OrderDetails() {
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
-                <span className="font-semibold text-lg text-gray-900">Order ID: {order.id}</span>
+                <span className="font-semibold text-lg text-gray-900">Order ID: {order._id || order.id}</span>
                 <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-xs font-bold">{order.status}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaCalendarAlt className="text-gray-500" />
-                <span>{order.dateRange}</span>
+                <span>{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</span>
               </div>
               <div className="flex items-center gap-2">
-                <select className="bg-gray-200 px-3 py-2 rounded text-gray-700">
-                  <option>Change Status</option>
-                  <option>Pending</option>
-                  <option>Delivered</option>
-                  <option>Canceled</option>
+                <select className="bg-gray-200 px-3 py-2 rounded text-gray-700" value={status} onChange={handleStatusChange}>
+                  <option value="">Change Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Canceled">Canceled</option>
                 </select>
                 <button className="bg-gray-200 p-2 rounded" aria-label="Print order"><FaPrint /></button>
                 <button className="bg-gray-200 p-2 rounded" aria-label="Save order"><FaSave /></button>
               </div>
             </div>
+            {statusError && <div className="text-red-600 mb-2">{statusError}</div>}
             {/* Info Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaUser className="text-gray-500" /><span className="font-semibold">Customer</span></div>
-                <div className="text-sm text-gray-900 font-bold">Full Name: {order.customer?.name ?? 'N/A'}</div>
-                <div className="text-xs text-gray-700">Email: {order.customer?.email ?? 'N/A'}</div>
-                <div className="text-xs text-gray-700 mb-2">Phone: {order.customer?.phone ?? 'N/A'}</div>
+                <div className="text-sm text-gray-900 font-bold">Full Name: {order.user?.name ?? order.customer?.name ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Email: {order.user?.email ?? order.customer?.email ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700 mb-2">Phone: {order.user?.phone_number ?? order.customer?.phone ?? 'N/A'}</div>
                 <button className="bg-blue-900 text-white px-4 py-1 rounded text-xs font-semibold">View profile</button>
               </div>
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaTruck className="text-gray-500" /><span className="font-semibold">Order Info</span></div>
-                <div className="text-xs text-gray-700">Shipping: {order.orderInfo?.shipping ?? 'N/A'}</div>
-                <div className="text-xs text-gray-700">Payment Method: {order.orderInfo?.paymentMethod ?? 'N/A'}</div>
-                <div className="text-xs text-gray-700 mb-2">Status: {order.orderInfo?.status ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Shipping: {order.address?.address_line1 ?? order.shipping?.address ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">Payment Method: {order.paymentMethod ?? order.orderInfo?.paymentMethod ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700 mb-2">Status: {order.status ?? order.orderInfo?.status ?? 'N/A'}</div>
                 <button className="bg-blue-900 text-white px-4 py-1 rounded text-xs font-semibold flex items-center gap-1"><FaDownload /> Download info</button>
               </div>
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaTruck className="text-gray-500" /><span className="font-semibold">Deliver to</span></div>
-                <div className="text-xs text-gray-700 mb-2">Address: {order.shipping?.address ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700 mb-2">Address: {order.address?.address_line1 ?? order.shipping?.address ?? 'N/A'}</div>
                 <button className="bg-blue-900 text-white px-4 py-1 rounded text-xs font-semibold">View profile</button>
               </div>
               <div className="bg-gray-50 rounded p-4 flex flex-col items-start">
                 <div className="flex items-center gap-2 mb-2"><FaCreditCard className="text-gray-500" /><span className="font-semibold">Payment Info</span></div>
-                <div className="text-xs text-gray-700">{order.payment?.method ?? 'N/A'}</div>
-                <div className="text-xs text-gray-700">Business name: {order.payment?.business ?? 'N/A'}</div>
-                <div className="text-xs text-gray-700">Phone: {order.payment?.phone ?? 'N/A'}</div>
+                <div className="text-xs text-gray-700">{order.paymentMethod ?? order.payment?.method ?? 'N/A'}</div>
+                {/* Add more payment info fields as needed */}
               </div>
             </div>
             {/* Note */}
@@ -124,38 +156,25 @@ export default function OrderDetails() {
                   <tr className="bg-gray-50 text-gray-700">
                     <th scope="col" className="px-3 py-2 text-left font-semibold"><input type="checkbox" aria-label="Select all products" /></th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold">Product Name</th>
-                    <th scope="col" className="px-3 py-2 text-left font-semibold">Order ID</th>
                     <th scope="col" className="px-3 py-2 text-left font-semibold">Quantity</th>
-                    <th scope="col" className="px-3 py-2 text-left font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {order.products?.map((product, idx) => (
                     <tr
-                      key={product.orderId + idx}
+                      key={product.product_id || idx}
                       className="border-t border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-                      onClick={() => router.push(`/product/${product.orderId}`)}
                     >
-                      <td className="px-3 py-2"><input type="checkbox" aria-label={`Select ${product.name}`} /></td>
-                      <td className="px-3 py-2">{product.name}</td>
-                      <td className="px-3 py-2">{product.orderId}</td>
+                      <td className="px-3 py-2"><input type="checkbox" aria-label={`Select ${product.product_id}`} /></td>
+                      <td className="px-3 py-2">{product.product_id}</td>
                       <td className="px-3 py-2">{product.quantity}</td>
-                      <td className="px-3 py-2">₹{product.total?.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             {/* Summary */}
-            <div className="flex flex-col items-end mt-4">
-              <div className="w-full max-w-xs">
-                <div className="flex justify-between py-1 text-gray-700"><span>Subtotal</span><span>₹{order.summary?.subtotal?.toFixed(2) ?? '0.00'}</span></div>
-                <div className="flex justify-between py-1 text-gray-700"><span>Tax (20%)</span><span>₹{order.summary?.tax?.toFixed(2) ?? '0.00'}</span></div>
-                <div className="flex justify-between py-1 text-gray-700"><span>Discount</span><span>₹{order.summary?.discount?.toFixed(2) ?? '0.00'}</span></div>
-                <div className="flex justify-between py-1 text-gray-700"><span>Shipping Rate</span><span>₹{order.summary?.shipping?.toFixed(2) ?? '0.00'}</span></div>
-                <div className="flex justify-between py-2 text-lg font-bold text-gray-900 border-t mt-2"><span>Total</span><span>₹{order.summary?.total?.toFixed(2) ?? '0.00'}</span></div>
-              </div>
-            </div>
+            {/* If backend provides summary, display it here */}
           </div>
         </main>
         {/* Footer */}

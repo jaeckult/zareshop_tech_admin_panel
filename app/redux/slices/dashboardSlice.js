@@ -3,26 +3,20 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 export const fetchDashboardStats = createAsyncThunk(
   'dashboard/fetchStats',
   async () => {
-    const res = await fetch('/data.json');
-    const data = await res.json();
-    const orders = data.orders || [];
-    const totalOrders = orders.length;
-    const activeOrders = orders.filter(o => o.status === 'Pending').length;
-    const completedOrders = orders.filter(o => o.status === 'Delivered').length;
-    const returnOrders = orders.filter(o => o.status === 'Canceled').length;
-    return { totalOrders, activeOrders, completedOrders, returnOrders };
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:3000/api/users/admin/stats', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error('Failed to fetch dashboard stats');
+    const result = await res.json();
+    return result.data || {};
   }
 );
 
 const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState: {
-    stats: {
-      totalOrders: 0,
-      activeOrders: 0,
-      completedOrders: 0,
-      returnOrders: 0
-    },
+    stats: {},
     loading: false,
     error: null,
   },

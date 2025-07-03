@@ -5,36 +5,25 @@ import { useState, useEffect } from 'react';
 import { FaEllipsisV, FaCalendarAlt } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchOrders } from '../redux/slices/ordersSlice';
 
 const Topbar = dynamic(() => import('../components/TopBar'), {
   loading: () => <div className="p-4">Loading top bar...</div>,
 });
 
 export default function OrderList() {
-  
   const router = useRouter();
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
   const [activePage, setActivePage] = useState(1);
+  const dispatch = useDispatch();
+  const { orders, loading, error } = useSelector((state) => state.orders);
 
   useEffect(() => {
-    fetch('/data.json')
-      .then(res => res.json())
-      .then(data => {
-        setProducts(data.products || []);
-        // Attach product name to each order if possible
-        const ordersWithProduct = (data.orders || []).map(order => {
-          // Try to find a product for this order (by id or other logic)
-          // Here, as a placeholder, just use the first product if exists
-          let productName = '';
-          if (data.products && data.products.length > 0) {
-            productName = data.products[0].title;
-          }
-          return { ...order, productName };
-        });
-        setOrders(ordersWithProduct);
-      });
-  }, []);
+    dispatch(fetchOrders());
+  }, [dispatch]);
+
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -71,49 +60,25 @@ export default function OrderList() {
               <table className="min-w-full text-sm text-gray-900">
                 <thead>
                   <tr className="bg-gray-100 text-gray-800">
-                    <th className="px-3 py-2 text-left font-semibold">
-                      <input type="checkbox" />
-                    </th>
-                    <th className="px-3 py-2 text-left font-semibold">Product</th>
                     <th className="px-3 py-2 text-left font-semibold">Order ID</th>
-                    <th className="px-3 py-2 text-left font-semibold">Date</th>
-                    <th className="px-3 py-2 text-left font-semibold">Customer Name</th>
+                    <th className="px-3 py-2 text-left font-semibold">User ID</th>
                     <th className="px-3 py-2 text-left font-semibold">Status</th>
-                    <th className="px-3 py-2 text-left font-semibold">Amount</th>
+                    <th className="px-3 py-2 text-left font-semibold">Total</th>
+                    <th className="px-3 py-2 text-left font-semibold">Created At</th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map((order, idx) => (
                     <tr
-                      key={order.id + idx}
+                      key={order.id || idx}
                       className="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
-                      onClick={() => router.push(`/order-list/${order.id.replace('#', '')}`)}
+                      onClick={() => router.push(`/order-list/${order.id}`)}
                     >
-                      <td className="px-3 py-2">
-                        <input type="checkbox" />
-                      </td>
-                      <td className="px-3 py-2">{order.productName || 'N/A'}</td>
                       <td className="px-3 py-2">{order.id}</td>
-                      <td className="px-3 py-2">{order.date}</td>
-                      <td className="px-3 py-2 flex items-center gap-2">
-                        <img src={order.avatar} alt={order.customer} className="w-6 h-6 rounded-full object-cover" />
-                        <span className="text-gray-900">{order.customer}</span>
-                      </td>
-                      <td className="px-3 py-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold ${
-                          order.status === 'Delivered'
-                            ? 'bg-blue-200 text-blue-900'
-                            : 'bg-orange-200 text-orange-900'
-                        }`}>
-                          <span className={`w-2 h-2 rounded-full ${
-                            order.status === 'Delivered'
-                              ? 'bg-blue-700'
-                              : 'bg-orange-700'
-                          }`}></span>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2">{order.amount}</td>
+                      <td className="px-3 py-2">{order.user_id}</td>
+                      <td className="px-3 py-2">{order.status}</td>
+                      <td className="px-3 py-2">{order.total}</td>
+                      <td className="px-3 py-2">{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</td>
                     </tr>
                   ))}
                 </tbody>

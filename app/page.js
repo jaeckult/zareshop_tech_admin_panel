@@ -5,7 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login, loadUserFromStorage } from './redux/slices/authSlice';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+
+  const [phone_number, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   const router = useRouter();
@@ -23,12 +24,13 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(login({ username, password }));
+    dispatch(login({ phone_number, password }));
   };
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-100">Loading...</div>;
   }
+  
   if (isAuthenticated) {
     return <div className="flex items-center justify-center min-h-screen bg-gray-100">Redirecting...</div>;
   }
@@ -39,8 +41,8 @@ export default function LoginPage() {
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
         <div className="mb-4">
-          <label className="block mb-1 font-medium">Username</label>
-          <input type="text" className="w-full border rounded px-3 py-2" value={username} onChange={e => setUsername(e.target.value)} required />
+          <label className="block mb-1 font-medium">Phone Number</label>
+          <input type="text" className="w-full border rounded px-3 py-2" value={phone_number} onChange={e => setPhoneNumber(e.target.value)} required />
         </div>
         <div className="mb-6">
           <label className="block mb-1 font-medium">Password</label>

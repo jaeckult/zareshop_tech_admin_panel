@@ -1,16 +1,18 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchOrders } from '../redux/slices/ordersSlice';
 
 export default function OrderTable() {
-  const [orders, setOrders] = useState([]);
+  const dispatch = useDispatch();
+  const { orders, loading, error } = useSelector((state) => state.orders);
 
   useEffect(() => {
-    fetch('/data.json')
-      .then(res => res.json())
-      .then(data => {
-        setOrders((data.orders || []).slice(0, 6));
-      });
-  }, []);
+    dispatch(fetchOrders());
+  }, [dispatch]);
+
+  if (loading) return <div className="p-4">Loading...</div>;
+  if (error) return <div className="p-4 text-red-600">Error: {error}</div>;
 
   return (
     <div className="bg-white p-4 rounded shadow">
@@ -18,34 +20,24 @@ export default function OrderTable() {
       <table className="w-full text-sm">
         <thead className="text-left text-gray-500">
           <tr>
-            <th>Product</th>
             <th>Order ID</th>
-            <th>Date</th>
-            <th>Customer Name</th>
+            <th>User ID</th>
             <th>Status</th>
-            <th>Amount</th>
+            <th>Total</th>
+            <th>Created At</th>
           </tr>
         </thead>
         <tbody>
-          {orders.map((order, idx) => (
+          {orders.slice(0, 6).map((order, idx) => (
             <tr
-              key={idx}
+              key={order.id || idx}
               className="border-t border-gray-200 hover:bg-gray-50 transition"
             >
-              <td className="py-4 text-gray-800">Lorem Ipsum</td>
               <td className="py-4 text-gray-900">{order.id}</td>
-              <td className="py-4 text-gray-600">{order.date}</td>
-              <td className="py-4 text-gray-700">{order.customer}</td>
-              <td
-                className={`py-4 font-medium ${
-                  order.status === 'Delivered'
-                    ? 'text-green-600'
-                    : 'text-orange-500'
-                }`}
-              >
-                {order.status}
-              </td>
-              <td className="py-4 text-gray-800">{order.amount}</td>
+              <td className="py-4 text-gray-700">{order.user_id}</td>
+              <td className="py-4 text-gray-700">{order.status}</td>
+              <td className="py-4 text-gray-800">{order.total}</td>
+              <td className="py-4 text-gray-600">{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</td>
             </tr>
           ))}
         </tbody>

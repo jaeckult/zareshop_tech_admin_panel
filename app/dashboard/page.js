@@ -37,10 +37,10 @@ export default function Home() {
         <main className="p-6">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">Dashboard</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <StatCard title="Total Orders" value={stats.totalOrders}  />
-            <StatCard title="Active Orders" value={stats.activeOrders}  />
-            <StatCard title="Completed Orders" value={stats.completedOrders}  />
-            <StatCard title="Return Orders" value={stats.returnOrders} />
+            <StatCard title="Users" value={stats.users} />
+            <StatCard title="Products" value={stats.products} />
+            <StatCard title="Categories" value={stats.categories} />
+            <StatCard title="Orders" value={stats.orders} />
           </div>
           <OrderTable />
         </main>

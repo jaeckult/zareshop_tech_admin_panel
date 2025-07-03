@@ -8,21 +8,53 @@ import { fetchProductsData } from '../redux/slices/productsSlice';
 
 export default function AllProducts() {
   const [showModal, setShowModal] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(0);
   const [activePage, setActivePage] = useState(1);
   const dispatch = useDispatch();
-  const { categories, products, loading, error } = useSelector((state) => state.products);
+  const { products, loading, error } = useSelector((state) => state.products);
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', stock: '' });
+  const [addError, setAddError] = useState(null);
 
   useEffect(() => {
     dispatch(fetchProductsData());
   }, [dispatch]);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    setAddError(null);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          name: newProduct.name,
+          description: newProduct.description,
+          price: Number(newProduct.price),
+          stock: Number(newProduct.stock)
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setAddError(err.message || 'Failed to add product');
+        return;
+      }
+      setShowModal(false);
+      setNewProduct({ name: '', description: '', price: '', stock: '' });
+      dispatch(fetchProductsData());
+    } catch (err) {
+      setAddError(err.message);
+    }
+  };
 
   if (loading) return <div className="p-8">Loading...</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar with categories */}
+      {/* Sidebar (categories removed if not provided by backend) */}
       <aside className="w-64 bg-white shadow-md p-6 hidden md:block">
         <h1 className="text-2xl font-bold text-blue-800 mb-10 flex items-center gap-2">
           Zareshop
@@ -39,22 +71,6 @@ export default function AllProducts() {
               <a href="/order-list" className="block rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-800">Order List</a>
             </li>
           </ul>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Categories</h2>
-            <ul className="space-y-1">
-              {categories.map((cat, idx) => (
-                <li key={idx}>
-                  <button
-                    className={`flex items-center justify-between w-full px-2 py-1 rounded transition-colors ${activeCategory === idx ? 'bg-blue-100 text-blue-800 font-bold' : 'text-gray-800 hover:bg-gray-100'}`}
-                    onClick={() => setActiveCategory(idx)}
-                  >
-                    <span>{cat.name}</span>
-                    <span className={`ml-2 px-2 py-0.5 rounded text-xs ${activeCategory === idx ? 'bg-blue-800 text-white' : 'bg-gray-200 text-gray-700'}`}>{cat.count?.toString().padStart(2, '0')}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
         </nav>
       </aside>
       {/* Main content */}
@@ -76,26 +92,17 @@ export default function AllProducts() {
           {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {products.map((product, idx) => (
-              <div key={product.id} className="bg-white rounded-lg shadow p-4 flex flex-col h-full">
+              <div key={product.id || idx} className="bg-white rounded-lg shadow p-4 flex flex-col h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <img src={product.image} alt={product.title} className="w-16 h-16 object-contain" />
+                  <img src={product.image || '/earbud.png'} alt={product.name} className="w-16 h-16 object-contain" />
                   <button className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><FaEllipsisV /></button>
                 </div>
-                <div className="font-bold text-gray-900">{product.title}</div>
-                <div className="text-xs text-gray-500 mb-1">{product.subtitle}</div>
+                <div className="font-bold text-gray-900">{product.name}</div>
+                <div className="text-xs text-gray-500 mb-1">{product.description}</div>
                 <div className="font-semibold text-lg text-gray-900 mb-2">{product.price}</div>
-                <div className="text-sm font-semibold text-gray-700 mb-1">Summary</div>
-                <div className="text-xs text-gray-500 mb-2">{product.summary}</div>
-                <div className="flex justify-between items-center mt-auto pt-2 border-t border-gray-200">
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs text-gray-500">Sales</span>
-                    <span className="text-orange-600 font-bold flex items-center gap-1">↑ {product.sales}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-xs text-gray-500">Remaining Products</span>
-                    <span className="text-orange-600 font-bold flex items-center gap-1">{product.remaining}</span>
-                  </div>
-                </div>
+                <div className="text-sm font-semibold text-gray-700 mb-1">Stock</div>
+                <div className="text-xs text-gray-500 mb-2">{product.stock}</div>
+                {/* Add more fields as needed from backend */}
               </div>
             ))}
           </div>
@@ -137,9 +144,12 @@ export default function AllProducts() {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
             <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
               <h3 className="text-lg font-semibold mb-4">Add Product</h3>
-              <form onSubmit={e => { e.preventDefault(); setShowModal(false); }}>
-                <input className="w-full mb-3 p-2 border rounded" placeholder="Product Name" required />
-                <input className="w-full mb-3 p-2 border rounded" placeholder="Price" type="number" required />
+              <form onSubmit={handleAddProduct}>
+                <input className="w-full mb-3 p-2 border rounded" placeholder="Product Name" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} />
+                <input className="w-full mb-3 p-2 border rounded" placeholder="Description" required value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} />
+                <input className="w-full mb-3 p-2 border rounded" placeholder="Price" type="number" required value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: e.target.value })} />
+                <input className="w-full mb-3 p-2 border rounded" placeholder="Stock" type="number" required value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })} />
+                {addError && <div className="text-red-600 mb-2">{addError}</div>}
                 <div className="flex justify-end gap-2">
                   <button type="button" className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowModal(false)}>Cancel</button>
                   <button type="submit" className="px-4 py-2 bg-blue-700 text-white rounded">Add</button>

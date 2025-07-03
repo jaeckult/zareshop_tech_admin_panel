@@ -3,11 +3,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 export const fetchProductsData = createAsyncThunk(
   'products/fetchProductsData',
   async () => {
-    const res = await fetch('/data.json');
-    const data = await res.json();
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:3000/api/products', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error('Failed to fetch products');
+    const products = await res.json();
+    // If categories are not provided by backend, set as empty array
     return {
-      categories: data.categories || [],
-      products: data.products || [],
+      categories: [],
+      products: products || [],
     };
   }
 );

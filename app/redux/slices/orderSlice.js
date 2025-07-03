@@ -3,9 +3,13 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 export const fetchOrderDetails = createAsyncThunk(
   'order/fetchOrderDetails',
   async (orderId) => {
-    const res = await fetch('/data.json');
-    const data = await res.json();
-    return data.orderDetails?.[`#${orderId}`] || null;
+    const token = localStorage.getItem('token');
+    const res = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error('Failed to fetch order details');
+    const order = await res.json();
+    return order || null;
   }
 );
 
