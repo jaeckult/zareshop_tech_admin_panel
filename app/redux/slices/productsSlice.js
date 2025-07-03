@@ -4,15 +4,21 @@ export const fetchProductsData = createAsyncThunk(
   'products/fetchProductsData',
   async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:3000/api/products', {
+    // Fetch products
+    const productsRes = await fetch('http://localhost:3000/api/products', {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {},
     });
-    if (!res.ok) throw new Error('Failed to fetch products');
-    const products = await res.json();
-    // If categories are not provided by backend, set as empty array
+    if (!productsRes.ok) throw new Error('Failed to fetch products');
+    const productsResult = await productsRes.json();
+    // Fetch categories
+    const categoriesRes = await fetch('http://localhost:3000/api/categories', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    });
+    if (!categoriesRes.ok) throw new Error('Failed to fetch categories');
+    const categoriesResult = await categoriesRes.json();
     return {
-      categories: [],
-      products: products || [],
+      categories: categoriesResult.data || [],
+      products: productsResult.data || [],
     };
   }
 );
