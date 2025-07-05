@@ -45,7 +45,7 @@ export default function Topbar() {
 
   return (
     <div className="flex items-center justify-between bg-white p-4 shadow">
-      <div className="text-sm text-gray-800">Oct 11, 2023 - Nov 11, 2022</div>
+      <div className="text-sm text-gray-800">Oct 11, 2025 - Nov 11, 2025</div>
       <div className="flex items-center gap-4">
         {/* Hide search icon on dashboard */}
         {pathname !== '/dashboard' && (

@@ -3,20 +3,19 @@ import Sidebar from '../components/SideBar'
 import Topbar from '../components/TopBar'
 import { useState, useEffect } from 'react'
 import { FaEllipsisV } from 'react-icons/fa'
-import { useSelector, useDispatch } from 'react-redux';
+import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchProductsData } from '../redux/slices/productsSlice';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 export default function AllProducts() {
   const [showModal, setShowModal] = useState(false);
   const [activePage, setActivePage] = useState(1);
-  const dispatch = useDispatch();
-  const { products, loading, error } = useSelector((state) => state.products);
+  const { products, loading, error } = useSmartFetch(
+    fetchProductsData,
+    (state) => state.products
+  );
   const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', stock: '' });
   const [addError, setAddError] = useState(null);
-
-  useEffect(() => {
-    dispatch(fetchProductsData());
-  }, [dispatch]);
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -49,8 +48,75 @@ export default function AllProducts() {
     }
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
+  if (loading && products.length === 0) {
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <aside className="w-64 bg-white shadow-md p-6 hidden md:block">
+          <h1 className="text-2xl font-bold text-blue-800 mb-10 flex items-center gap-2">
+            Zareshop
+          </h1>
+          <nav>
+            <ul className="space-y-2 mb-8">
+              <li>
+                <a href="/dashboard" className="block font-medium rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-900">Dashboard</a>
+              </li>
+              <li>
+                <a href="/all-products" className="block rounded px-3 py-2 transition-colors bg-blue-100 text-blue-800 font-medium">All Products</a>
+              </li>
+              <li>
+                <a href="/order-list" className="block rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-800">Order List</a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Topbar />
+          <main className="flex-1 p-8 bg-gray-50">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">All Products</h2>
+                <div className="text-sm text-gray-500 mt-1">Home &gt; All Products</div>
+              </div>
+            </div>
+            <SkeletonLoader type="card" count={8} />
+          </main>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <aside className="w-64 bg-white shadow-md p-6 hidden md:block">
+          <h1 className="text-2xl font-bold text-blue-800 mb-10 flex items-center gap-2">
+            Zareshop
+          </h1>
+          <nav>
+            <ul className="space-y-2 mb-8">
+              <li>
+                <a href="/dashboard" className="block font-medium rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-900">Dashboard</a>
+              </li>
+              <li>
+                <a href="/all-products" className="block rounded px-3 py-2 transition-colors bg-blue-100 text-blue-800 font-medium">All Products</a>
+              </li>
+              <li>
+                <a href="/order-list" className="block rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-800">Order List</a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Topbar />
+          <main className="flex-1 p-8 bg-gray-50">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+              Error: {error}
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -62,7 +128,7 @@ export default function AllProducts() {
         <nav>
           <ul className="space-y-2 mb-8">
             <li>
-              <a href="/" className="block font-medium rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-900">Dashboard</a>
+              <a href="/dashboard" className="block font-medium rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-900">Dashboard</a>
             </li>
             <li>
               <a href="/all-products" className="block rounded px-3 py-2 transition-colors bg-blue-100 text-blue-800 font-medium">All Products</a>
@@ -131,7 +197,7 @@ export default function AllProducts() {
         </main>
         {/* Footer */}
         <footer className="p-4 text-xs text-gray-500 flex justify-between bg-white border-t mt-auto">
-          <span>© 2023 - pulstron Dashboard</span>
+          <span>© 2025 - Zareshop Dashboard</span>
           <span>
             <a href="#" className="hover:underline mx-2">About</a>
             <a href="#" className="hover:underline mx-2">Careers</a>

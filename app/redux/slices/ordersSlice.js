@@ -19,8 +19,14 @@ const ordersSlice = createSlice({
     orders: [],
     loading: false,
     error: null,
+    lastFetched: null,
   },
-  reducers: {},
+  reducers: {
+    clearOrdersCache: (state) => {
+      state.orders = [];
+      state.lastFetched = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchOrders.pending, (state) => {
@@ -30,6 +36,7 @@ const ordersSlice = createSlice({
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
         state.orders = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
@@ -38,4 +45,5 @@ const ordersSlice = createSlice({
   },
 });
 
+export const { clearOrdersCache } = ordersSlice.actions;
 export default ordersSlice.reducer; 

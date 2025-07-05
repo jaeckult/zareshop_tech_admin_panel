@@ -19,8 +19,14 @@ const dashboardSlice = createSlice({
     stats: {},
     loading: false,
     error: null,
+    lastFetched: null,
   },
-  reducers: {},
+  reducers: {
+    clearDashboardCache: (state) => {
+      state.stats = {};
+      state.lastFetched = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchDashboardStats.pending, (state) => {
@@ -30,6 +36,7 @@ const dashboardSlice = createSlice({
       .addCase(fetchDashboardStats.fulfilled, (state, action) => {
         state.loading = false;
         state.stats = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchDashboardStats.rejected, (state, action) => {
         state.loading = false;
@@ -38,4 +45,5 @@ const dashboardSlice = createSlice({
   },
 });
 
+export const { clearDashboardCache } = dashboardSlice.actions;
 export default dashboardSlice.reducer; 

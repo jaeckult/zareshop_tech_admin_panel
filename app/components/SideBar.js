@@ -11,7 +11,7 @@ export default function Sidebar({ showCategories }) {
       <nav>
         <ul className="space-y-2">
           <li>
-            <Link href="/" className={`block font-medium rounded px-3 py-2 transition-colors ${pathname === '/' ? 'bg-blue-100 text-blue-800' : 'text-gray-900 hover:bg-gray-100'}`}>Dashboard</Link>
+            <Link href="/dashboard" className={`block font-medium rounded px-3 py-2 transition-colors ${pathname === '/dashboard' ? 'bg-blue-100 text-blue-800' : 'text-gray-900 hover:bg-gray-100'}`}>Dashboard</Link>
           </li>
           <li>
             <Link href="/all-products" className={`block rounded px-3 py-2 transition-colors ${pathname === '/all-products' ? 'bg-blue-100 text-blue-800' : 'text-gray-800 hover:bg-gray-100'}`}>All Products</Link>

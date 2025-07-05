@@ -1,38 +1,50 @@
 "use client";
-import Sidebar from '../components/SideBar'
 import Topbar from '../components/TopBar'
 import StatCard from '../components/StatCard'
 import OrderTable from '../components/OrderTable'
-import { useSelector, useDispatch } from 'react-redux';
+import LoadingSpinner from '../components/LoadingSpinner'
+import SkeletonLoader from '../components/SkeletonLoader'
+import PageWrapper from '../components/PageWrapper'
+import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchDashboardStats } from '../redux/slices/dashboardSlice';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { loadUserFromStorage } from '../redux/slices/authSlice';
 
 export default function Home() {
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const { stats, loading: statsLoading, error } = useSelector((state) => state.dashboard);
-  const { isAuthenticated, loading: authLoading } = useSelector((state) => state.auth);
+  const { stats, loading: statsLoading, error } = useSmartFetch(
+    fetchDashboardStats,
+    (state) => state.dashboard
+  );
 
-  useEffect(() => {
-    dispatch(loadUserFromStorage());
-    dispatch(fetchDashboardStats());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/');
+  const renderContent = () => {
+    if (statsLoading && Object.keys(stats).length === 0) {
+      return (
+        <>
+          <Topbar />
+          <main className="p-6">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Dashboard</h2>
+            <SkeletonLoader type="stats" />
+            <div className="mt-6">
+              <SkeletonLoader type="table" />
+            </div>
+          </main>
+        </>
+      );
     }
-  }, [isAuthenticated, authLoading, router]);
+    
+    if (error) {
+      return (
+        <>
+          <Topbar />
+          <main className="p-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+              Error: {error}
+            </div>
+          </main>
+        </>
+      );
+    }
 
-  if (authLoading || statsLoading) return <div className="p-8">Loading...</div>;
-  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
-
-  return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar showCategories={false} />
-      <div className="flex-1">
+    return (
+      <>
         <Topbar />
         <main className="p-6">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">Dashboard</h2>
@@ -44,7 +56,13 @@ export default function Home() {
           </div>
           <OrderTable />
         </main>
-      </div>
-    </div>
-  )
+      </>
+    );
+  };
+
+  return (
+    <PageWrapper sidebarProps={{ showCategories: false }}>
+      {renderContent()}
+    </PageWrapper>
+  );
 } 

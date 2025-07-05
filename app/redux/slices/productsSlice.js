@@ -30,8 +30,15 @@ const productsSlice = createSlice({
     products: [],
     loading: false,
     error: null,
+    lastFetched: null,
   },
-  reducers: {},
+  reducers: {
+    clearProductsCache: (state) => {
+      state.categories = [];
+      state.products = [];
+      state.lastFetched = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProductsData.pending, (state) => {
@@ -42,6 +49,7 @@ const productsSlice = createSlice({
         state.loading = false;
         state.categories = action.payload.categories;
         state.products = action.payload.products;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchProductsData.rejected, (state, action) => {
         state.loading = false;
@@ -50,4 +58,5 @@ const productsSlice = createSlice({
   },
 });
 
+export const { clearProductsCache } = productsSlice.actions;
 export default productsSlice.reducer; 

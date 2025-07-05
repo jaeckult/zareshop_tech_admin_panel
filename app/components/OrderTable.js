@@ -1,18 +1,25 @@
 "use client";
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchOrders } from '../redux/slices/ordersSlice';
+import SkeletonLoader from './SkeletonLoader';
 
 export default function OrderTable() {
-  const dispatch = useDispatch();
-  const { orders, loading, error } = useSelector((state) => state.orders);
+  const { orders, loading, error } = useSmartFetch(
+    fetchOrders,
+    (state) => state.orders
+  );
 
-  useEffect(() => {
-    dispatch(fetchOrders());
-  }, [dispatch]);
-
-  if (loading) return <div className="p-4">Loading...</div>;
-  if (error) return <div className="p-4 text-red-600">Error: {error}</div>;
+  if (loading && orders.length === 0) {
+    return <SkeletonLoader type="table" />;
+  }
+  
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-4 rounded shadow">

@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react';
 import { FaEllipsisV, FaCalendarAlt } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchOrders } from '../redux/slices/ordersSlice';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const Topbar = dynamic(() => import('../components/TopBar'), {
   loading: () => <div className="p-4">Loading top bar...</div>,
@@ -17,12 +18,10 @@ export default function OrderList() {
   const searchParams = useSearchParams();
   const [activePage, setActivePage] = useState(1);
   const [search, setSearch] = useState(searchParams.get('q') || '');
-  const dispatch = useDispatch();
-  const { orders, loading, error } = useSelector((state) => state.orders);
-
-  useEffect(() => {
-    dispatch(fetchOrders());
-  }, [dispatch]);
+  const { orders, loading, error } = useSmartFetch(
+    fetchOrders,
+    (state) => state.orders
+  );
 
   // Update search state if URL changes (e.g., browser nav)
   useEffect(() => {
@@ -50,8 +49,41 @@ export default function OrderList() {
     }
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
+  if (loading && orders.length === 0) {
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Topbar />
+          <main className="flex-1 p-8 bg-gray-50">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Orders List</h2>
+                <div className="text-sm text-gray-700 mt-1">Home &gt; Order List</div>
+              </div>
+            </div>
+            <SkeletonLoader type="table" />
+          </main>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-100">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <Topbar />
+          <main className="flex-1 p-8 bg-gray-50">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+              Error: {error}
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -155,7 +187,7 @@ export default function OrderList() {
 
         {/* Footer */}
         <footer className="p-4 text-sm text-gray-700 flex justify-between bg-white border-t mt-auto">
-          <span>© 2023 - pulstron Dashboard</span>
+          <span>© 2025 - Zareshop Dashboard</span>
           <span>
             <a href="#" className="hover:underline mx-2">About</a>
             <a href="#" className="hover:underline mx-2">Careers</a>

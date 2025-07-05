@@ -62,7 +62,7 @@ export default function OrderDetails() {
         <nav>
           <ul className="space-y-2 mb-8">
             <li>
-              <a href="/" className="block font-medium rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-900">Dashboard</a>
+              <a href="/dashboard" className="block font-medium rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-900">Dashboard</a>
             </li>
             <li>
               <a href="/all-products" className="block rounded px-3 py-2 transition-colors hover:bg-gray-100 text-gray-800">All Products</a>
