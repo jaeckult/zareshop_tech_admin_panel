@@ -6,10 +6,12 @@ import { FaEllipsisV } from 'react-icons/fa'
 import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchProductsData } from '../redux/slices/productsSlice';
 import SkeletonLoader from '../components/SkeletonLoader';
+import { sortData } from '../utils/sortUtils';
 
 export default function AllProducts() {
   const [showModal, setShowModal] = useState(false);
   const [activePage, setActivePage] = useState(1);
+  const [currentSort, setCurrentSort] = useState({ key: 'name', direction: 'asc' });
   const { products, loading, error } = useSmartFetch(
     fetchProductsData,
     (state) => state.products
@@ -46,6 +48,12 @@ export default function AllProducts() {
     } catch (err) {
       setAddError(err.message);
     }
+  };
+
+  const sortedProducts = sortData(products, currentSort.key, currentSort.direction);
+
+  const handleSort = (key, direction) => {
+    setCurrentSort({ key, direction });
   };
 
   if (loading && products.length === 0) {
@@ -155,9 +163,44 @@ export default function AllProducts() {
               + Add New Product
             </button>
           </div>
+          {/* Sorting Controls */}
+          <div className="mb-4 flex items-center gap-4 text-sm">
+            <span className="text-gray-600">Sort by:</span>
+            <button
+              onClick={() => handleSort('name', currentSort.key === 'name' && currentSort.direction === 'asc' ? 'desc' : 'asc')}
+              className={`px-3 py-1 rounded border transition-colors ${
+                currentSort.key === 'name' 
+                  ? 'bg-blue-100 text-blue-800 border-blue-300' 
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Name {currentSort.key === 'name' && (currentSort.direction === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              onClick={() => handleSort('price', currentSort.key === 'price' && currentSort.direction === 'asc' ? 'desc' : 'asc')}
+              className={`px-3 py-1 rounded border transition-colors ${
+                currentSort.key === 'price' 
+                  ? 'bg-blue-100 text-blue-800 border-blue-300' 
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Price {currentSort.key === 'price' && (currentSort.direction === 'asc' ? '↑' : '↓')}
+            </button>
+            <button
+              onClick={() => handleSort('stock', currentSort.key === 'stock' && currentSort.direction === 'asc' ? 'desc' : 'asc')}
+              className={`px-3 py-1 rounded border transition-colors ${
+                currentSort.key === 'stock' 
+                  ? 'bg-blue-100 text-blue-800 border-blue-300' 
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Stock {currentSort.key === 'stock' && (currentSort.direction === 'asc' ? '↑' : '↓')}
+            </button>
+          </div>
+
           {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {products.map((product, idx) => (
+            {sortedProducts.map((product, idx) => (
               <div key={product.id || idx} className="bg-white rounded-lg shadow p-4 flex flex-col h-full">
                 <div className="flex items-center justify-between mb-2">
                   <img src={product.image || '/earbud.png'} alt={product.name} className="w-16 h-16 object-contain" />

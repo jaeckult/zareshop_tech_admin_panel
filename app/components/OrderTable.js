@@ -1,13 +1,19 @@
 "use client";
+import { useRouter } from 'next/navigation';
 import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchOrders } from '../redux/slices/ordersSlice';
 import SkeletonLoader from './SkeletonLoader';
 
 export default function OrderTable() {
+  const router = useRouter();
   const { orders, loading, error } = useSmartFetch(
     fetchOrders,
     (state) => state.orders
   );
+
+  const handleOrderClick = (orderId) => {
+    router.push(`/order-list?highlight=${orderId}`);
+  };
 
   if (loading && orders.length === 0) {
     return <SkeletonLoader type="table" />;
@@ -38,7 +44,8 @@ export default function OrderTable() {
           {orders.slice(0, 6).map((order, idx) => (
             <tr
               key={order.id || idx}
-              className="border-t border-gray-200 hover:bg-gray-50 transition"
+              className="border-t border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+              onClick={() => handleOrderClick(order.id)}
             >
               <td className="py-4 text-gray-900">{order.id}</td>
               <td className="py-4 text-gray-700">{order.user_id}</td>

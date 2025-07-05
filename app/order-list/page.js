@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSmartFetch } from '../hooks/useSmartFetch';
 import { fetchOrders } from '../redux/slices/ordersSlice';
 import SkeletonLoader from '../components/SkeletonLoader';
+import SortableHeader from '../components/SortableHeader';
+import { sortData } from '../utils/sortUtils';
 
 const Topbar = dynamic(() => import('../components/TopBar'), {
   loading: () => <div className="p-4">Loading top bar...</div>,
@@ -18,6 +20,8 @@ export default function OrderList() {
   const searchParams = useSearchParams();
   const [activePage, setActivePage] = useState(1);
   const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [currentSort, setCurrentSort] = useState({ key: 'createdAt', direction: 'desc' });
+  const [highlightedOrder, setHighlightedOrder] = useState(null);
   const { orders, loading, error } = useSmartFetch(
     fetchOrders,
     (state) => state.orders
@@ -28,7 +32,17 @@ export default function OrderList() {
     setSearch(searchParams.get('q') || '');
   }, [searchParams]);
 
-  // Filter orders based on search query
+  // Check for highlighted order from URL
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight');
+    if (highlightId) {
+      setHighlightedOrder(highlightId);
+      // Remove highlight after 3 seconds
+      setTimeout(() => setHighlightedOrder(null), 3000);
+    }
+  }, [searchParams]);
+
+  // Filter and sort orders
   const query = search.trim().toLowerCase();
   const filteredOrders = query
     ? orders.filter(order =>
@@ -38,6 +52,12 @@ export default function OrderList() {
         String(order.total).toLowerCase().includes(query)
       )
     : orders;
+
+  const sortedOrders = sortData(filteredOrders, currentSort.key, currentSort.direction);
+
+  const handleSort = (key, direction) => {
+    setCurrentSort({ key, direction });
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -122,38 +142,50 @@ export default function OrderList() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm text-gray-900">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-800">
-                    <th className="px-3 py-2 text-left font-semibold">Order ID</th>
-                    <th className="px-3 py-2 text-left font-semibold">User ID</th>
-                    <th className="px-3 py-2 text-left font-semibold">Status</th>
-                    <th className="px-3 py-2 text-left font-semibold">Total</th>
-                    <th className="px-3 py-2 text-left font-semibold">Created At</th>
+                          <table className="min-w-full text-sm text-gray-900">
+              <thead>
+                <tr className="bg-gray-100 text-gray-800">
+                  <th className="px-3 py-2 text-left font-semibold">Order ID</th>
+                  <th className="px-3 py-2 text-left font-semibold">User ID</th>
+                  <th className="px-3 py-2 text-left font-semibold">Status</th>
+                  <SortableHeader 
+                    label="Total" 
+                    sortKey="total" 
+                    currentSort={currentSort} 
+                    onSort={handleSort}
+                  />
+                  <SortableHeader 
+                    label="Created At" 
+                    sortKey="createdAt" 
+                    currentSort={currentSort} 
+                    onSort={handleSort}
+                  />
+                </tr>
+              </thead>
+              <tbody>
+                {sortedOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-8 text-gray-500">No results found.</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="text-center py-8 text-gray-500">No results found.</td>
+                ) : (
+                  sortedOrders.map((order, idx) => (
+                    <tr
+                      key={order.id || idx}
+                      className={`border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer ${
+                        highlightedOrder === String(order.id) ? 'bg-yellow-100 animate-pulse' : ''
+                      }`}
+                      onClick={() => router.push(`/order-list/${order.id}`)}
+                    >
+                      <td className="px-3 py-2">{order.id}</td>
+                      <td className="px-3 py-2">{order.user_id}</td>
+                      <td className="px-3 py-2">{order.status}</td>
+                      <td className="px-3 py-2">{order.total}</td>
+                      <td className="px-3 py-2">{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</td>
                     </tr>
-                  ) : (
-                    filteredOrders.map((order, idx) => (
-                      <tr
-                        key={order.id || idx}
-                        className="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
-                        onClick={() => router.push(`/order-list/${order.id}`)}
-                      >
-                        <td className="px-3 py-2">{order.id}</td>
-                        <td className="px-3 py-2">{order.user_id}</td>
-                        <td className="px-3 py-2">{order.status}</td>
-                        <td className="px-3 py-2">{order.total}</td>
-                        <td className="px-3 py-2">{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                  ))
+                )}
+              </tbody>
+            </table>
             </div>
 
             {/* Pagination */}
